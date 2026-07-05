@@ -6,6 +6,7 @@ functions, so no live database is needed.
 """
 
 import json
+import logging
 from decimal import Decimal
 from typing import Any
 
@@ -127,3 +128,15 @@ def test_wrapper_output_is_json_safe(fake_settings: None, monkeypatch: pytest.Mo
     result = server.get_passenger(1)
     assert result == {"passenger_id": 1, "age": 22.0, "fare": 7.25}
     json.dumps(result)  # must not raise — Decimal would
+
+
+def test_wrapper_emits_audit_log_without_leaking_dsn(
+    fake_settings: None, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setattr(passengers, "get_passenger", lambda s, pid: {"passenger_id": 1})
+    with caplog.at_level(logging.INFO, logger="mcp_data_gateway.audit"):
+        server.get_passenger(1)
+    msg = caplog.records[0].message
+    assert 'tool="get_passenger"' in msg
+    assert "result_count=1" in msg
+    assert "postgresql://" not in msg  # the DATABASE_URL never reaches the log
