@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-data-gateway"
+version = "0.1.0"
+description = "MCP server exposing controlled, read-only PostgreSQL tools to AI agents"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "mcp>=1.2",
+    "psycopg[binary]>=3.2",
+]
+
+[project.scripts]
+mcp-data-gateway = "mcp_data_gateway.server:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.8",
+    "bandit>=1.8",
+    "pip-audit>=2.7",
+    "pre-commit>=4.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_data_gateway"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # bugbear
+    "UP",  # pyupgrade
+    "S",   # bandit (security)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # assert is fine in tests
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
