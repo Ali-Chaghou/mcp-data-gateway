@@ -8,7 +8,9 @@ from typing import Any
 
 import pytest
 
-from mcp_data_gateway.config import Settings
+import load_titanic as loader
+from integration_utils import requires_integration
+from mcp_data_gateway.config import Settings, load_settings
 from mcp_data_gateway.tools.stats import (
     ALLOWED_GROUP_BY,
     InvalidGroupByError,
@@ -118,6 +120,16 @@ def test_group_by_value_is_never_interpolated() -> None:
     assert params == ()
 
 
-@pytest.mark.skip(reason="TODO(M3): requires the Docker Compose database (make up)")
+@requires_integration
 def test_stats_against_live_database() -> None:
     """survival_summary and survival_by run against the real table via gateway_reader."""
+    settings = load_settings()
+
+    summary = survival_summary(settings)
+    assert summary.keys() == {"total_count", "survived_count", "survival_rate"}
+    assert summary["total_count"] == len(loader.SAMPLE_PASSENGERS)
+    assert 0.0 <= summary["survival_rate"] <= 1.0
+
+    by_sex = survival_by(settings, "sex")
+    groups = {row["group"] for row in by_sex}
+    assert {"male", "female"} <= groups

@@ -8,7 +8,8 @@ from typing import Any
 
 import pytest
 
-from mcp_data_gateway.config import Settings
+from integration_utils import requires_integration
+from mcp_data_gateway.config import Settings, load_settings
 from mcp_data_gateway.tools.schema import (
     UnknownTableError,
     describe_table,
@@ -90,6 +91,11 @@ def test_describe_table_rejects_information_schema() -> None:
         describe_table(SETTINGS, "information_schema.columns", conn=_FakeConnection())
 
 
-@pytest.mark.skip(reason="TODO(M3): requires the Docker Compose database (make up)")
+@requires_integration
 def test_describe_table_against_live_database() -> None:
     """describe_table succeeds against the real passengers table via gateway_reader."""
+    settings = load_settings()
+    assert list_tables() == ["passengers"]
+    meta = describe_table(settings, "passengers")
+    names = [col["name"] for col in meta["columns"]]
+    assert {"passenger_id", "survived", "sex", "age"} <= set(names)

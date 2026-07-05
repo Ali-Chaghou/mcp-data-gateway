@@ -8,7 +8,8 @@ from typing import Any
 
 import pytest
 
-from mcp_data_gateway.config import Settings
+from integration_utils import requires_integration
+from mcp_data_gateway.config import Settings, load_settings
 from mcp_data_gateway.tools.passengers import (
     InvalidFilterError,
     get_passenger,
@@ -161,6 +162,21 @@ def test_limit_is_applied_when_within_cap() -> None:
     assert query.endswith("LIMIT 5")
 
 
-@pytest.mark.skip(reason="TODO(M3): requires the Docker Compose database (make up)")
+@requires_integration
 def test_passenger_lookup_against_live_database() -> None:
     """get_passenger and search_passengers run against the real table via gateway_reader."""
+    settings = load_settings()
+
+    row = get_passenger(settings, 1)
+    assert row is not None
+    assert row["passenger_id"] == 1
+
+    assert get_passenger(settings, 10_000_000) is None
+
+    females = search_passengers(settings, sex="female")
+    assert isinstance(females, list)
+    assert females
+    assert all(r["sex"] == "female" for r in females)
+
+    limited = search_passengers(settings, limit=2)
+    assert len(limited) <= 2

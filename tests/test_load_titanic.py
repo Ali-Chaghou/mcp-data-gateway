@@ -5,9 +5,12 @@ admin settings) with no database. The DB setup itself is exercised by a skipped
 integration test that needs the Docker Compose PostgreSQL instance (`make up`).
 """
 
+import psycopg
 import pytest
 
 import load_titanic as loader
+from integration_utils import requires_integration
+from mcp_data_gateway.config import load_settings
 
 
 def test_sample_data_is_well_formed() -> None:
@@ -56,10 +59,23 @@ def test_admin_conninfo_rejects_missing_settings() -> None:
         loader.admin_conninfo({"POSTGRES_USER": "postgres"})
 
 
-@pytest.mark.skip(reason="TODO(M2): requires the Docker Compose database (make up)")
+@requires_integration
 def test_loader_creates_select_only_role() -> None:
-    """After main(), gateway_reader can SELECT passengers but not INSERT.
+    """gateway_reader can SELECT passengers but has no write privilege.
 
-    Run against a live database: load, then connect as gateway_reader and assert
-    a SELECT succeeds while an INSERT is refused.
+    Uses a *raw* connection (no read-only session hardening) so the write is
+    refused by the role's grants themselves — insufficient privilege — proving
+    layer 3 independently of the session settings applied in db.connect.
     """
+    settings = load_settings()
+    with psycopg.connect(settings.database_url, autocommit=True) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT count(*) FROM passengers")
+            row = cur.fetchone()
+            assert row is not None and row[0] == len(loader.SAMPLE_PASSENGERS)
+        with conn.cursor() as cur, pytest.raises(psycopg.errors.InsufficientPrivilege):
+            cur.execute(
+                "INSERT INTO passengers "
+                "(passenger_id, survived, pclass, name, sex, sibsp, parch) "
+                "VALUES (999902, 0, 3, 'grant probe', 'male', 0, 0)"
+            )

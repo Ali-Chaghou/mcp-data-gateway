@@ -10,11 +10,18 @@ instance (`make up`) and stays skipped until the DB setup (M2) lands.
 
 from typing import Any
 
+import psycopg
 import pytest
 
+from integration_utils import requires_integration
 from mcp_data_gateway import db
-from mcp_data_gateway.config import Settings
+from mcp_data_gateway.config import Settings, load_settings
 from mcp_data_gateway.security.readonly_sql import ReadOnlyViolation
+
+_PROBE_INSERT = (
+    "INSERT INTO passengers (passenger_id, survived, pclass, name, sex, sibsp, parch) "
+    "VALUES (999901, 0, 3, 'read-only probe', 'male', 0, 0)"
+)
 
 SETTINGS = Settings(
     database_url="postgresql://reader:pw@localhost:5432/agentdata",
@@ -96,10 +103,22 @@ def test_session_setup_forces_read_only_and_timeout() -> None:
     assert timeout_calls == [("SELECT set_config('statement_timeout', %s, false)", ("5000",))]
 
 
-@pytest.mark.skip(reason="TODO(M2): requires the Docker Compose database (make up)")
+@requires_integration
 def test_connection_is_read_only() -> None:
-    """The database session must refuse writes even at the driver level.
+    """The configured session must refuse writes even at the driver level.
 
-    With a live SELECT-only role and ``default_transaction_read_only = on``, an
-    INSERT sent straight to the driver (bypassing the guard) must still fail.
+    With ``default_transaction_read_only = on`` (and the SELECT-only role), an
+    INSERT sent straight to the driver — bypassing the guard — must still fail,
+    while reads keep working.
     """
+    settings = load_settings()
+    conn = db.connect(settings)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT count(*) FROM passengers")
+            row = cur.fetchone()
+            assert row is not None and row[0] >= 1
+        with conn.cursor() as cur, pytest.raises(psycopg.Error):
+            cur.execute(_PROBE_INSERT)
+    finally:
+        conn.close()
