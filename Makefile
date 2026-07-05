@@ -1,3 +1,8 @@
+ifneq (,$(wildcard .env))
+include .env
+export
+endif
+
 VENV := .venv
 PYTHON := $(VENV)/bin/python
 
