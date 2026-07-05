@@ -8,6 +8,8 @@ nav:
   - Home: index.md
   - Architecture: architecture.md
   - Security model: security-model.md
+  - Tool reference: tool-reference.md
+  - Operations: operations.md
   - Validation: validation.md
   - Demo walkthrough: demo-walkthrough.md
   - Decisions:

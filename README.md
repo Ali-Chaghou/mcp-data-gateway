@@ -78,6 +78,8 @@ site with MkDocs:
 
 - [Architecture](docs/architecture.md) — components and the request path
 - [Security model](docs/security-model.md) — the defense-in-depth layers
+- [Tool reference](docs/tool-reference.md) — the six MCP tools in detail
+- [Operations](docs/operations.md) — configuration, container, logs, commands
 - [Validation](docs/validation.md) — what is proven, and how
 - [Demo walkthrough](docs/demo-walkthrough.md) — run it locally with Docker
 - [Decisions](docs/decisions.md) — key design choices
