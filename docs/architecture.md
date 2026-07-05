@@ -1,53 +1,64 @@
 # Architecture
 
-## Overview
+The gateway is a single Python process that speaks MCP over stdio (ADR-0003).
+An MCP host/client calls named tools; each call is validated, turned into a
+parameterized read-only query, executed against PostgreSQL through a hardened
+session, and returned as JSON-safe data. This page describes the system as it is
+built today.
+
+> A rendered architecture diagram is planned separately; this page is the
+> authoritative textual description.
+
+## Request path
 
 ```
-┌────────────┐   MCP (stdio)   ┌──────────────────────────────┐   SQL (read-only role)
-│  AI agent  │ ◄─────────────► │  mcp-data-gateway (Python)  │ ◄────────────────────► PostgreSQL
-│ (MCP host) │                 │                              │
-└────────────┘                 │  server.py    tool registry  │
-                               │  tools/       schema │ rows  │
-                               │               │ aggregates   │
-                               │  security/    readonly guard │
-                               │  db.py        conn handling  │
-                               │  config.py    env settings   │
-                               └──────────────────────────────┘
+MCP host / client
+      │  (stdio, JSON tool calls)
+      ▼
+server.py            MCP tool wrappers (fixed surface, no raw-SQL tool)
+      │
+      ├─ audit.py            audit-logging boundary: one structured line per call
+      ├─ serialization.py    JSON-safe boundary: Decimal → float, recursive
+      │
+      ▼
+tools/               schema.py · passengers.py · stats.py
+      │              (argument allow-lists; parameterized values only)
+      ▼
+security/readonly_sql.py   read-only SQL guard (single SELECT, allow-listed tables)
+      │
+      ▼
+db.py                execute_readonly: read-only session + statement timeout + row cap
+      │  (SQL, read-only role)
+      ▼
+PostgreSQL           passengers table, queried by the gateway_reader SELECT-only role
 ```
-
-The gateway is a single Python process speaking MCP over stdio (ADR-0003). Agents call
-named tools; the gateway translates each call into a parameterized, validated SQL query
-and returns structured results.
 
 ## Components
 
-| Component                    | Responsibility                                                |
-| ---------------------------- | ------------------------------------------------------------- |
-| `server.py`                  | MCP server entrypoint; registers tools; stdio transport        |
-| `config.py`                  | Typed settings loaded from the environment (`.env` in dev)     |
-| `db.py`                      | psycopg connections; read-only session flags; timeouts         |
-| `tools/schema.py`            | `list_tables`, `describe_table` — schema introspection         |
-| `tools/passengers.py`        | Row lookup and filtered search over the demo dataset           |
-| `tools/stats.py`             | Aggregate statistics (counts, group-bys, survival rates)       |
-| `security/readonly_sql.py`   | Validates that outgoing SQL is a single read-only statement    |
+| Component | Responsibility |
+| --- | --- |
+| `server.py` | Registers the six MCP tools over stdio; each wrapper is thin and applies the audit and serialization boundaries. |
+| `audit.py` | Emits one structured log line per tool call (name, sanitized args, outcome, count/error type). No raw SQL or credentials. |
+| `serialization.py` | Converts tool output to JSON/MCP-safe values (notably `Decimal` → `float`), recursively and without mutating source rows. |
+| `tools/schema.py` | `list_tables`, `describe_table` — curated metadata for the allow-listed table. |
+| `tools/passengers.py` | `get_passenger`, `search_passengers` — validated, parameterized lookups. |
+| `tools/stats.py` | `survival_summary`, `survival_by` — aggregates over fixed query templates. |
+| `security/readonly_sql.py` | Deny-by-default guard: a single `SELECT`, allow-listed tables, no comments/chaining/dangerous functions. |
+| `db.py` | psycopg connections with `default_transaction_read_only = on`, a statement timeout, and a result-row cap. |
+| `config.py` | Typed settings loaded and validated from the environment. |
 
-## Request flow
+## Runtime and database
 
-1. The MCP host invokes a tool with JSON arguments.
-2. Tool code validates arguments (types, ranges, allow-listed column names).
-3. The tool builds a parameterized query and passes it through the read-only SQL guard.
-4. `db.py` executes it on a `SELECT`-only role with `default_transaction_read_only=on`
-   and a statement timeout.
-5. Results are shaped into a compact JSON structure and returned to the agent.
+The server connects as **`gateway_reader`**, a PostgreSQL role created by
+`scripts/load_titanic.py` with `SELECT`-only grants on `passengers` and no write
+privileges (ADR-0002). The demo dataset is a small, deterministic Titanic-style
+`passengers` table, kept intentionally small so the focus stays on the gateway
+pattern rather than data engineering.
 
-## Safety model
+## Continuous integration
 
-Three independent layers must all fail before a write can occur — tool design, the SQL
-guard, and database-role permissions. Details in [SECURITY.md](../SECURITY.md) and
-ADR-0002.
+CI (GitHub Actions) has three jobs:
 
-## Data
-
-The demo dataset is the Titanic passenger list, loaded by `scripts/load_titanic.py`
-into a single `passengers` table. It is deliberately small so the focus stays on the
-gateway pattern, not on data engineering.
+- **quality** — `make lint`, `make test`, `make audit` (ruff, pytest, bandit, pip-audit); no database.
+- **integration** — a PostgreSQL service container; runs `make load-data`, `make smoke`, and the opt-in live-DB tests.
+- **image** — builds the container image and runs an import-only sanity check plus a non-root assertion; no database.

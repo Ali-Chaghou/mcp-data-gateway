@@ -39,3 +39,5 @@ scripts/
 Makefile
 docker-compose.yml
 .pre-commit-config.yaml
+mkdocs.yml
+site/

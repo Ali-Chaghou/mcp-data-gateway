@@ -6,7 +6,7 @@ endif
 VENV := .venv
 PYTHON := $(VENV)/bin/python
 
-.PHONY: help install up down run load-data smoke test lint fmt audit clean
+.PHONY: help install up down run load-data smoke test lint fmt audit docs docs-serve clean
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -46,5 +46,11 @@ audit: ## Security static analysis and dependency audit
 	$(PYTHON) -m bandit -c pyproject.toml -r src scripts
 	$(PYTHON) -m pip_audit
 
+docs: ## Build the documentation site into site/
+	$(PYTHON) -m mkdocs build --strict
+
+docs-serve: ## Preview the documentation site with live reload
+	$(PYTHON) -m mkdocs serve
+
 clean: ## Remove venv and caches
-	rm -rf $(VENV) .pytest_cache .ruff_cache dist build
+	rm -rf $(VENV) .pytest_cache .ruff_cache dist build site

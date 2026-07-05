@@ -71,6 +71,22 @@ tests/                 # pytest suite
 docs/                  # architecture, process, decision records
 ```
 
+## Documentation
+
+Full documentation lives in [`docs/`](docs/index.md) and builds into a static
+site with MkDocs:
+
+- [Architecture](docs/architecture.md) — components and the request path
+- [Security model](docs/security-model.md) — the defense-in-depth layers
+- [Validation](docs/validation.md) — what is proven, and how
+- [Demo walkthrough](docs/demo-walkthrough.md) — run it locally with Docker
+- [Decisions](docs/decisions.md) — key design choices
+
+```sh
+make docs               # build the site into site/
+make docs-serve         # preview locally with live reload
+```
+
 ## Development
 
 ```sh

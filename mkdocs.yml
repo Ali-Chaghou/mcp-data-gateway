@@ -1,0 +1,20 @@
+site_name: mcp-data-gateway
+site_description: A read-only MCP gateway to PostgreSQL for AI agents
+docs_dir: docs
+theme:
+  name: readthedocs
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - Security model: security-model.md
+  - Validation: validation.md
+  - Demo walkthrough: demo-walkthrough.md
+  - Decisions:
+      - Overview: decisions.md
+      - ADR-0001 · PostgreSQL: decision-records/0001-use-postgresql.md
+      - ADR-0002 · Read-only access: decision-records/0002-read-only-agent-access.md
+      - ADR-0003 · stdio-first: decision-records/0003-stdio-first.md
+  - Project:
+      - Plan: project-plan.md
+      - Engineering process: engineering-process.md
