@@ -78,3 +78,22 @@ jobs:
 
       - name: Test suite (includes live-DB integration tests)
         run: make test
+
+  image:
+    name: Container image build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t mcp-data-gateway:ci .
+
+      # Import-only sanity check. The entrypoint is overridden because running
+      # the real entrypoint would start the stdio server and hang; no database
+      # is needed since importing the package touches neither env nor DB.
+      - name: Sanity check (import inside the image)
+        run: docker run --rm --entrypoint python mcp-data-gateway:ci -c "import mcp_data_gateway.server; print('ok')"
+
+      - name: Verify the image runs as non-root
+        run: |
+          test "$(docker run --rm --entrypoint id mcp-data-gateway:ci -un)" = "gateway"
