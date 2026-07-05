@@ -36,9 +36,15 @@ Requires Python 3.12+, Docker, and `make`.
 cp .env.example .env        # defaults work for local development
 make up                     # start PostgreSQL via Docker Compose
 make install                # create venv and install dependencies
-make load-data              # load the Titanic dataset
+make load-data              # create the schema, load sample data, set up the reader role
 make run                    # start the MCP server on stdio
 ```
+
+`make load-data` connects as the local admin (`POSTGRES_*`) only for setup: it
+creates the `passengers` table with a small deterministic sample, then creates
+the `gateway_reader` role with `SELECT`-only access. The server itself connects
+via `DATABASE_URL`, which points at `gateway_reader` — never the admin user. The
+script is idempotent, so you can re-run it safely.
 
 To use with an MCP-capable client, register the server with a stdio transport
 pointing at `python -m mcp_data_gateway.server`.
