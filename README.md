@@ -4,8 +4,8 @@ A production-minded [MCP](https://modelcontextprotocol.io) server that lets AI a
 query a PostgreSQL database through a small set of **controlled, read-only tools**.
 
 The core idea: agents never get raw database access. Every interaction goes through
-explicitly designed tools with validated inputs, a read-only SQL guard, and a
-least-privilege database role.
+explicitly designed tools with validated inputs and a read-only SQL guard, backed by
+a least-privilege database role as the authoritative enforcement layer.
 
 > **Status:** early scaffold. The repository structure, tooling, and design docs are in
 > place; tool implementations are still TODO. See [docs/project-plan.md](docs/project-plan.md).
@@ -15,8 +15,12 @@ least-privilege database role.
 Giving an LLM agent a database connection string is easy — and dangerous. This project
 demonstrates a safer pattern:
 
-- **Read-only by design** — enforced at three layers: tool design, SQL validation, and
-  database role permissions. See [SECURITY.md](SECURITY.md).
+- **Read-only by design** — three independent layers: tool design, a SQL validation
+  guard as defense-in-depth, and a least-privilege database role as the authoritative
+  control. The guard is a deny-by-default first filter, not a full SQL parser; the
+  database role/session (`SELECT`-only, `default_transaction_read_only`) is what
+  ultimately enforces read-only and table access, and is planned for M2. See
+  [SECURITY.md](SECURITY.md).
 - **Small, purposeful tool surface** — schema inspection, row lookup, and aggregate
   stats. No generic "run any SQL" escape hatch for write operations.
 - **Boring, auditable stack** — Python 3.12, psycopg, PostgreSQL, Docker Compose.
