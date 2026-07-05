@@ -7,8 +7,10 @@ The core idea: agents never get raw database access. Every interaction goes thro
 explicitly designed tools with validated inputs and a read-only SQL guard, backed by
 a least-privilege database role as the authoritative enforcement layer.
 
-> **Status:** early scaffold. The repository structure, tooling, and design docs are in
-> place; tool implementations are still TODO. See [docs/project-plan.md](docs/project-plan.md).
+> **Status:** in progress. The config, database layer, SQL guard, and data loader are
+> implemented, and the schema, passenger-lookup, and stats tools are exposed over the
+> FastMCP stdio server. An end-to-end smoke test and further hardening remain. See
+> [docs/project-plan.md](docs/project-plan.md).
 
 ## Why
 
