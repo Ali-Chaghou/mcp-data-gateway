@@ -5,6 +5,8 @@ nor a database) and exercise the wrappers via monkeypatched settings and tool
 functions, so no live database is needed.
 """
 
+import json
+from decimal import Decimal
 from typing import Any
 
 import pytest
@@ -117,3 +119,11 @@ def test_get_passenger_wrapper_propagates_invalid_id(fake_settings: None) -> Non
 def test_survival_by_wrapper_propagates_invalid_group_by(fake_settings: None) -> None:
     with pytest.raises(InvalidGroupByError):
         server.survival_by("name")
+
+
+def test_wrapper_output_is_json_safe(fake_settings: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    row = {"passenger_id": 1, "age": Decimal("22"), "fare": Decimal("7.25")}
+    monkeypatch.setattr(passengers, "get_passenger", lambda s, pid: row)
+    result = server.get_passenger(1)
+    assert result == {"passenger_id": 1, "age": 22.0, "fare": 7.25}
+    json.dumps(result)  # must not raise — Decimal would
