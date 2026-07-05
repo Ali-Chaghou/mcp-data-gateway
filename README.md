@@ -81,6 +81,7 @@ site with MkDocs:
 - [Tool reference](docs/tool-reference.md) — the six MCP tools in detail
 - [Operations](docs/operations.md) — configuration, container, logs, commands
 - [Validation](docs/validation.md) — what is proven, and how
+- [Production considerations](docs/production-considerations.md) — demonstrated vs. still required
 - [Demo walkthrough](docs/demo-walkthrough.md) — run it locally with Docker
 - [Decisions](docs/decisions.md) — key design choices
 
