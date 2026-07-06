@@ -37,6 +37,12 @@ PostgreSQL that:
 They are skipped by a normal `make test`, and run in the CI **integration** job
 against a PostgreSQL service container.
 
+## Documentation build
+
+The CI **docs** job runs `make docs-check`: a strict MkDocs build (broken links or
+pages missing from the nav fail the build) followed by an internal link check over
+the generated site, so no page ships with a dead relative link or fragment anchor.
+
 ## Docker image build
 
 The CI **image** job builds the container image with no database and no secrets,

@@ -35,7 +35,10 @@ demonstrates a safer pattern:
 - **Boring, auditable stack** — Python 3.12, psycopg, PostgreSQL, Docker Compose.
 
 The demo dataset is the classic Titanic passenger list: small, well-known, and
-suitable as a low-risk public demo dataset.
+low-risk to expose publicly.
+
+For what this deliberately does not provide — and what a real deployment would
+still need — see [Production considerations](docs/production-considerations.md).
 
 ## Quickstart
 
@@ -46,6 +49,7 @@ cp .env.example .env        # defaults work for local development
 make up                     # start PostgreSQL via Docker Compose
 make install                # create venv and install dependencies
 make load-data              # create the schema, load sample data, set up the reader role
+make smoke                  # verify end to end (incl. that direct writes are refused)
 make run                    # start the MCP server on stdio
 ```
 
@@ -107,10 +111,11 @@ make audit              # bandit + pip-audit
 pre-commit install      # enable git hooks
 ```
 
-CI runs these on every push and pull request, alongside a strict MkDocs build, the
-opt-in live-DB integration tests (which prove the read-only role and that direct
-writes are refused), and a container image build that also checks the image runs as
-a non-root user. See [Validation](docs/validation.md) for what each check proves.
+CI runs these on every push and pull request, alongside a strict MkDocs build with
+an internal link check, the opt-in live-DB integration tests (which prove the
+read-only role and that direct writes are refused), and a container image build
+that also checks the image runs as a non-root user. See
+[Validation](docs/validation.md) for what each check proves.
 
 Engineering conventions are described in
 [docs/engineering-process.md](docs/engineering-process.md); design decisions are
