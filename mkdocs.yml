@@ -1,5 +1,6 @@
 site_name: mcp-data-gateway
 site_description: A read-only MCP gateway to PostgreSQL for AI agents
+site_url: https://ali-chaghou.github.io/mcp-data-gateway/
 docs_dir: docs
 theme:
   name: readthedocs

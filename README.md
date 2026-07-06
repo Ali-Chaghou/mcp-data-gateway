@@ -79,8 +79,8 @@ docs/                  # architecture, security, operations, decisions
 
 ## Documentation
 
-Full documentation lives in [`docs/`](docs/index.md) and builds into a static
-site with MkDocs:
+Full documentation lives in [`docs/`](docs/index.md) and is published with MkDocs
+at <https://ali-chaghou.github.io/mcp-data-gateway/>:
 
 - [Architecture](docs/architecture.md) — components and the request path
 - [Security model](docs/security-model.md) — the defense-in-depth layers
