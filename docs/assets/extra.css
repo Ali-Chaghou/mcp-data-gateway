@@ -1,0 +1,23 @@
+/* Calm, professional palette layered over the Material theme:
+   deep navy / charcoal surfaces, a soft purple accent, and teal links.
+   Colors only — no layout hacks, no external assets. */
+
+:root {
+  --md-primary-fg-color: #1b2440; /* deep navy header */
+  --md-primary-fg-color--light: #2a3560;
+  --md-primary-fg-color--dark: #131a30;
+  --md-accent-fg-color: #7c6cff; /* soft purple accent */
+  --md-typeset-a-color: #0e7f8c; /* teal links (readable on light) */
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #141c33; /* darker navy header */
+  --md-default-bg-color: #10151f; /* charcoal page surface */
+  --md-accent-fg-color: #9b8cff; /* lighter purple on dark */
+  --md-typeset-a-color: #2dd4bf; /* teal/cyan links (readable on charcoal) */
+}
+
+/* Slightly calmer, wider content column for long-form docs. */
+.md-grid {
+  max-width: 62rem;
+}
