@@ -1,6 +1,7 @@
 # mcp-data-gateway
 
 [![CI](https://github.com/Ali-Chaghou/mcp-data-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/Ali-Chaghou/mcp-data-gateway/actions/workflows/ci.yml)
+[![Pages](https://github.com/Ali-Chaghou/mcp-data-gateway/actions/workflows/pages.yml/badge.svg)](https://github.com/Ali-Chaghou/mcp-data-gateway/actions/workflows/pages.yml)
 
 A production-minded [MCP](https://modelcontextprotocol.io) server that lets AI agents
 query a PostgreSQL database through a small set of **controlled, read-only tools**.

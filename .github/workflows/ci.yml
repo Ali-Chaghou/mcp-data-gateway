@@ -46,10 +46,11 @@ jobs:
       - name: Install project with dev dependencies
         run: make install
 
-      # `make docs` runs `mkdocs build --strict`, so broken links or pages
-      # missing from the nav fail the build. No database or secrets involved.
-      - name: Build docs
-        run: make docs
+      # `make docs-check` runs `mkdocs build --strict` (broken links or pages
+      # missing from the nav fail the build) and then a link check over the
+      # generated site/. No database or secrets involved.
+      - name: Build docs and check internal links
+        run: make docs-check
 
   integration:
     name: Live-DB integration
