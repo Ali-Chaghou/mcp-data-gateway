@@ -12,6 +12,7 @@ nav:
   - Operations: operations.md
   - Validation: validation.md
   - Production considerations: production-considerations.md
+  - Implementation journey: implementation-journey.md
   - Demo walkthrough: demo-walkthrough.md
   - Decisions:
       - Overview: decisions.md

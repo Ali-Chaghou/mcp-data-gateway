@@ -88,6 +88,7 @@ site with MkDocs:
 - [Operations](docs/operations.md) — configuration, container, logs, commands
 - [Validation](docs/validation.md) — what is proven, and how
 - [Production considerations](docs/production-considerations.md) — demonstrated vs. still required
+- [Implementation journey](docs/implementation-journey.md) — how it was built, phase by phase
 - [Demo walkthrough](docs/demo-walkthrough.md) — run it locally with Docker
 - [Decisions](docs/decisions.md) — key design choices
 
