@@ -28,8 +28,7 @@ demonstrates a safer pattern:
   guard as defense-in-depth, and a least-privilege database role as the authoritative
   control. The guard is a deny-by-default first filter, not a full SQL parser; the
   database role/session (`SELECT`-only, `default_transaction_read_only`) is what
-  ultimately enforces read-only and table access, and is planned for M2. See
-  [SECURITY.md](SECURITY.md).
+  ultimately enforces read-only and table access. See [SECURITY.md](SECURITY.md).
 - **Small, purposeful tool surface** — schema inspection, row lookup, and aggregate
   stats. No generic "run any SQL" escape hatch for write operations.
 - **Boring, auditable stack** — Python 3.12, psycopg, PostgreSQL, Docker Compose.
@@ -62,9 +61,11 @@ pointing at `python -m mcp_data_gateway.server`.
 
 ```
 src/mcp_data_gateway/
-  server.py            # MCP server entrypoint (stdio)
+  server.py            # MCP server entrypoint (stdio); registers the tools
   config.py            # environment-based configuration
-  db.py                # connection handling
+  db.py                # connection handling; read-only session, timeout, row cap
+  audit.py             # structured audit logging boundary
+  serialization.py     # JSON-safe output boundary
   tools/               # the agent-facing tools
     schema.py          #   describe tables and columns
     passengers.py      #   look up passenger rows
@@ -73,7 +74,7 @@ src/mcp_data_gateway/
     readonly_sql.py    # read-only SQL guard
 scripts/               # data loading and smoke test
 tests/                 # pytest suite
-docs/                  # architecture, process, decision records
+docs/                  # architecture, security, operations, decisions
 ```
 
 ## Documentation
@@ -103,6 +104,11 @@ make lint               # ruff check + format check
 make audit              # bandit + pip-audit
 pre-commit install      # enable git hooks
 ```
+
+CI runs these on every push and pull request, alongside a strict MkDocs build, the
+opt-in live-DB integration tests (which prove the read-only role and that direct
+writes are refused), and a container image build that also checks the image runs as
+a non-root user. See [Validation](docs/validation.md) for what each check proves.
 
 Engineering conventions are described in
 [docs/engineering-process.md](docs/engineering-process.md); design decisions are
