@@ -9,10 +9,15 @@ The core idea: agents never get raw database access. Every interaction goes thro
 explicitly designed tools with validated inputs and a read-only SQL guard, backed by
 a least-privilege database role as the authoritative enforcement layer.
 
-> **Status:** in progress. The config, database layer, SQL guard, and data loader are
-> implemented, and the schema, passenger-lookup, and stats tools are exposed over the
-> FastMCP stdio server. An end-to-end smoke test and further hardening remain. See
+> **Status:** reference implementation with fixed MCP tools, read-only PostgreSQL
+> access, JSON-safe output, audit logging, live-DB integration, container image,
+> and documentation build covered by CI. See
 > [docs/project-plan.md](docs/project-plan.md).
+
+![mcp-data-gateway architecture](docs/assets/architecture.png)
+
+The gateway exposes a fixed, read-only MCP tool surface backed by a SELECT-only
+PostgreSQL role.
 
 ## Why
 

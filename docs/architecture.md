@@ -6,8 +6,10 @@ parameterized read-only query, executed against PostgreSQL through a hardened
 session, and returned as JSON-safe data. This page describes the system as it is
 built today.
 
-> A rendered architecture diagram is planned separately; this page is the
-> authoritative textual description.
+![mcp-data-gateway architecture](assets/architecture.png)
+
+The textual description below is the authoritative reference; the diagram is a
+rendered overview of the same system.
 
 ## Request path
 
